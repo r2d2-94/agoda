@@ -10,6 +10,7 @@ import java.net.URL;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPSClient;
 
 import download.Download;
 
@@ -18,6 +19,12 @@ public class FTPDownloaderTask implements IDownloaderTask {
 		String username=null;
 		String password=null;
 		boolean enableSecureLayer = false;
+	public FTPDownloaderTask(URL url, boolean enableSecureLayer) {
+			setUrl(url);
+			this.enableSecureLayer = enableSecureLayer;
+			
+		}
+
 	@Override
 	public void run() {
 		download();
@@ -26,21 +33,24 @@ public class FTPDownloaderTask implements IDownloaderTask {
 
 	@Override
 	public void download() {
-		FTPClient ftpClient =  new FTPClient();
+		FTPClient aClient =  new FTPClient();
+		if(enableSecureLayer) {
+			aClient =  new FTPSClient();
+		}
 		try{
-			ftpClient.connect(url.getHost(), url.getPort());
-			ftpClient.login(username,password);
-			ftpClient.enterLocalPassiveMode();
-			ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-			ftpClient.setDefaultTimeout(3000);
+			aClient.connect(url.getHost(), url.getPort());
+			aClient.login(username,password);
+			aClient.enterLocalPassiveMode();
+			aClient.setFileType(FTP.BINARY_FILE_TYPE);
+			aClient.setDefaultTimeout(3000);
 			OutputStream outputStream =  new BufferedOutputStream(new FileOutputStream(Download.DOWNLOAD_LOCATION+url.getPath()));
-			InputStream inputStream = ftpClient.retrieveFileStream(url.getPath());
+			InputStream inputStream = aClient.retrieveFileStream(url.getPath());
 			byte[] bytesArray =  new byte[4096];
 			int bytesRead = -1;
 			while((bytesRead = inputStream.read(bytesArray)) != -1){
 				outputStream.write(bytesArray, 0, bytesRead);
 			}
-			boolean success = ftpClient.completePendingCommand();
+			boolean success = aClient.completePendingCommand();
 			outputStream.close();
 			inputStream.close();
 			if(!success){
