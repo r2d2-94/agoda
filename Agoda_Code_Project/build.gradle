@@ -7,8 +7,14 @@
  */
 
 // Apply the java-library plugin to add support for Java Library
+plugins {
+  id "com.github.johnrengelman.shadow" version "4.0.1"
+}
 apply plugin: 'java-library'
-
+apply plugin: 'application'
+apply plugin : 'eclipse'
+apply plugin: "com.github.johnrengelman.shadow"
+mainClassName = 'download.Download'
 // In this section you declare where to find the dependencies of your project
 repositories {
     // Use jcenter for resolving your dependencies.
@@ -16,13 +22,7 @@ repositories {
     jcenter()
 }
 
-dependencies {
-    // This dependency is exported to consumers, that is to say found on their compile classpath.
-    api 'org.apache.commons:commons-math3:3.6.1'
-
-    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation 'com.google.guava:guava:23.0'
-    
+dependencies {   
 	compile group: 'commons-io', name: 'commons-io', version: '2.4'
 	// https://mvnrepository.com/artifact/com.jcraft/jsch
 compile group: 'com.jcraft', name: 'jsch', version: '0.1.50'
@@ -32,4 +32,5 @@ compile group: 'commons-net', name: 'commons-net', version: '3.6'
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }
+
 
