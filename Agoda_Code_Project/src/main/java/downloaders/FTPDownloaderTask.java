@@ -19,6 +19,7 @@ public class FTPDownloaderTask implements IDownloaderTask {
 		String username=null;
 		String password=null;
 		boolean enableSecureLayer = false;
+		public static final int PORT = 21;
 	public FTPDownloaderTask(URL url, boolean enableSecureLayer) {
 			setUrl(url);
 			this.enableSecureLayer = enableSecureLayer;
@@ -38,12 +39,12 @@ public class FTPDownloaderTask implements IDownloaderTask {
 			aClient =  new FTPSClient();
 		}
 		try{
-			aClient.connect(url.getHost(), url.getPort());
+			aClient.connect(url.getHost(), url.getPort()==-1?PORT:url.getPort());
 			aClient.login(username,password);
 			aClient.enterLocalPassiveMode();
 			aClient.setFileType(FTP.BINARY_FILE_TYPE);
 			aClient.setDefaultTimeout(3000);
-			OutputStream outputStream =  new BufferedOutputStream(new FileOutputStream(Download.DOWNLOAD_LOCATION+url.getPath()));
+			OutputStream outputStream =  new BufferedOutputStream(new FileOutputStream(Download.DOWNLOAD_LOCATION+url.getFile().replace("/", File.separator)));
 			InputStream inputStream = aClient.retrieveFileStream(url.getPath());
 			byte[] bytesArray =  new byte[4096];
 			int bytesRead = -1;
@@ -64,7 +65,7 @@ public class FTPDownloaderTask implements IDownloaderTask {
 			
 		}
 	}
-	private void deleteFile(String incompleteFile) {
+	public void deleteFile(String incompleteFile) {
 		File aFile = new File(incompleteFile);
 		aFile.delete();
 	}

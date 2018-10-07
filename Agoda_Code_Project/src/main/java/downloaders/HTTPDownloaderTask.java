@@ -60,7 +60,11 @@ public class HTTPDownloaderTask implements IDownloaderTask {
 		}
 			httpUrl.setConnectTimeout(3000);
 		ReadableByteChannel rbc = Channels.newChannel(url.openStream());
-		FileOutputStream fos = new FileOutputStream(Download.DOWNLOAD_LOCATION+url.getPath());
+		if(url.getPath().equals("")) {
+			
+		}
+		File aFile = new File(Download.DOWNLOAD_LOCATION+url.getFile().replace("/", File.separator).replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
+		FileOutputStream fos = new FileOutputStream(aFile);
 		fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
 		fos.close();
 		rbc.close();
@@ -101,7 +105,7 @@ public class HTTPDownloaderTask implements IDownloaderTask {
 			e.printStackTrace();
 		}
 	}
-	private void deleteFile(String incompleteFile) {
+	public void deleteFile(String incompleteFile) {
 		File aFile = new File(incompleteFile);
 		aFile.delete();
 	}

@@ -19,7 +19,7 @@ public class SFTPDownloaderTask implements IDownloaderTask {
 	URL url=null;
 	String username=null;
 	String password=null;
-	private static final int PORT = 22;
+	public static final int PORT = 22;
 	private static final String STRICTHOSTKEYCHECKING = "StrictHostKeyChecking";
 	@Override
 	public void run() {
@@ -49,7 +49,7 @@ public class SFTPDownloaderTask implements IDownloaderTask {
 			} catch (JSchException e) {
 				e.printStackTrace();
 			} catch (SftpException e) {
-				e.printStackTrace();
+				deleteFile(Download.DOWNLOAD_LOCATION+url.getPath());
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -62,7 +62,7 @@ public class SFTPDownloaderTask implements IDownloaderTask {
 	}
 
 	@Override
-	public void setUrl(URL ur) {
+	public void setUrl(URL url) {
 	this.url =  url;
 		
 	}
@@ -77,6 +77,12 @@ public class SFTPDownloaderTask implements IDownloaderTask {
 	public void setPassword(String password) {
 		this.password =  password;
 		
+	}
+
+	@Override
+	public void deleteFile(String incompleteFilePath) {
+		File aFile = new File(incompleteFilePath);
+		aFile.delete();
 	}
 
 }

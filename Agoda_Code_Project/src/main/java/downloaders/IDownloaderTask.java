@@ -8,4 +8,5 @@ public interface IDownloaderTask extends Runnable{
 	public void setUsername(String username);
 	public void setPassword(String password);
 	public void download();
+	public void deleteFile(String incompleteFilePath);
 }

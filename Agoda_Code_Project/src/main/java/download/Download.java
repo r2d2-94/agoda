@@ -6,9 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,9 +19,46 @@ import downloaders.IDownloaderTask;
 public class Download {
 	public static  String DOWNLOAD_LOCATION = null;
 	private static final String DEF_enc = System.getProperty(System.getProperty("file.encoding"));
+	public static String userDirectory = System.getProperty("user.dir");
 	public static void main(String[] args){
-		String userDirectory = System.getProperty("user.dir");
-		System.out.println(userDirectory);
+		prepareDownLoadLocation();
+		ExecutorService pool = Executors.newFixedThreadPool(10);
+		try( BufferedReader br = new BufferedReader(new FileReader(new File(userDirectory+File.separator+"urls")))){
+			String aLine = br.readLine();
+			while(aLine!=null){
+				String tokens[] = aLine.split(" ");
+				URL uri = new URL(tokens[0]);
+				IDownloaderTask aTask = DownloaderFactory.getInstance(uri);
+				if(uri.getUserInfo()!=null) {
+					parseAuthenticationForNonHttp(uri.getUserInfo(),aTask);
+				}
+				if(tokens.length>1) {
+					if(tokens.length==2) {
+					aTask.setUsername(tokens[1]);
+					}else if (tokens.length==3) {
+						aTask.setUsername(tokens[1]);
+						aTask.setPassword(tokens[2]);
+					}
+				}
+				pool.submit(aTask);
+				aLine = br.readLine();
+			}
+		} 
+		catch(MalformedURLException mue) {
+			System.out.println(mue.getMessage());
+		}
+		catch (FileNotFoundException e) {
+			System.out.println(e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		finally{
+			pool.shutdown();
+		}
+		
+	}
+	
+	public static void prepareDownLoadLocation() {
 		try {
 			FileReader fr = new FileReader(userDirectory+File.separator+"config.properties");
 			Properties prop =  new Properties();
@@ -33,33 +70,7 @@ public class Download {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		ExecutorService pool = Executors.newFixedThreadPool(10);
-		try( BufferedReader br = new BufferedReader(new FileReader(new File(userDirectory+File.separator+"urls")))){
-			String aLine = br.readLine();
-			while(aLine!=null){
-				String tokens[] = aLine.split(" ");
-				URL uri = new URL(tokens[0]);
-				IDownloaderTask aTask = DownloaderFactory.getInstance(uri);
-				if(uri.getUserInfo()!=null) {
-					parseAuthenticationForNonHttp(uri.getUserInfo(),aTask);
-				}
-				if(tokens[1]!=null)
-					aTask.setUsername(tokens[1]);
-				if(tokens[2]!=null)
-					aTask.setPassword(tokens[2]);
-				pool.submit(aTask);
-				aLine = br.readLine();
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally{
-			pool.shutdown();
-		}
-		
+		System.out.println("Downloading at "+DOWNLOAD_LOCATION);
 	}
 	private static void parseAuthenticationForNonHttp(String userinfo, IDownloaderTask aTask) {
 		try {
